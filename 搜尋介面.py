@@ -5,29 +5,13 @@ gmaps = googlemaps.Client(key=api_key)
 
 
 #找現在地點的經緯度
-from geopy.geocoders import Nominatim
+import geocoder
+g = geocoder.ip('me')
+#print(g.latlng)
 
-def get_current_location():
-    geolocator = Nominatim(user_agent="my_app")  # 创建一个 geolocator 对象
-    location = geolocator.geocode("")  # 获取当前位置
-    return location.latitude, location.longitude
-
-try:
-    current_location = get_current_location()
-except Exception:
-    location = "25.0174775, 121.5397653"
-    current_location = None
-    
-
-if current_location is not None:
-    latitude = current_location[0]
-    longitude = current_location[1]
-    print("Current Location:")
-    print(f"Latitude: {latitude}")
-    print(f"Longitude: {longitude}")
-    location = "current_location[0], current_location[1]"
-else:
-    location = "25.0174775, 121.5397653"  # 台大的经纬度
+coordinates = g.latlng
+location = '\"' + ', '.join(str(coord) for coord in coordinates) + '\"'
+#print(coordinate_str)
 
 
 #input
@@ -56,7 +40,7 @@ import googlemaps
 
 duration_in_minutes = []
 for i in range(len(places_result["results"])):
-    start = "25.0329636, 121.5654268"
+    start = location
     end = "place_id:" + places_result["results"][i]["place_id"]
     #print(end)
     directions_result = gmaps.directions(start, end)
