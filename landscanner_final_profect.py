@@ -122,7 +122,7 @@ def submit_search():
      # Open a new window to display the search results
     result_window = tk.Toplevel(root)
     result_window.title('Search Results')
-    result_window.geometry('800x600')
+    result_window.geometry('600x600')
     
     g = geocoder.ip('me')
     coordinates = g.latlng
@@ -137,11 +137,11 @@ def submit_search():
 
     # 轉化時間成搜尋半徑（單位：公尺）
     if mody == "driving" or mody == "transit":
-        radius = 120*duration/60*1000
+        radius = 60*duration/60*1000
     elif mody == "walking":
-        radius = 10*duration/60*1000
+        radius = 3*duration/60*1000
     elif mody == "bicycling":
-        radius = 100*duration/60*1000
+        radius = 50*duration/60*1000
 
     # 發送請求並獲取附近尋找店家結果
     try:
@@ -274,6 +274,7 @@ def submit_search():
                         break
         except Exception:
             quit()
+
         if five_star == False:
             five_star_review = 'No Five-star Comments'
         if price_level != None:
@@ -328,8 +329,11 @@ def submit_search():
     second = var2.get()
     third = var3.get()
 
-    FE_subset_keys = ['Name', 'opening_status', 'Reviews', 'Rating', 'Price Level', 'Five-star Review', 'Place ID']
-    FE_results = [{key: item[key] for key in FE_subset_keys} for item in output_by_choice(first, second, third)]
+    try:
+        FE_subset_keys = ['Name', 'opening_status', 'Reviews', 'Rating', 'Price Level', 'Five-star Review', 'Place ID']
+        FE_results = [{key: item[key] for key in FE_subset_keys} for item in output_by_choice(first, second, third)]
+    except Exception:
+        quit()
 
     map_subset_key = ['Place ID']
     sorted_placeid_dict = [{key: item[key] for key in map_subset_key} for item in output_by_choice(first, second, third)]
@@ -372,61 +376,14 @@ def submit_search():
 def display_data(data, result_window):
     # Create shop buttons
     for item in data:
-        button = tk.Button(result_window, text=item['Name'], font=('Arial', 30))
+        button = tk.Button(result_window, text=item['Name'], font=('Arial', 20))
         button.bind("<Button-1>", lambda event, item=item: show_details(item))
         button.pack(fill=tk.BOTH, expand=True)
 
     # Add a back button
-    back_button = tk.Button(result_window, text='Back', command=result_window.destroy, fg='blue', font=('Arial', 16))
+    back_button = tk.Button(result_window, text='Back', command=result_window.destroy, fg='blue', font=('Arial'))
     back_button.pack()
 
-
-
-# Drag and drop image
-def drop_image(item):
-    drop_window = tk.Toplevel(root)
-    drop_window.title(f"Drop an image for {item['name']}")
-    drop_window.geometry('400x200')
-
-    label_drop = tk.Label(drop_window, text='Drag and drop your image file here...')
-    label_drop.pack(fill=tk.BOTH, expand=tk.YES)
-
-    label_drop.drop_target_register(tk.DND_FILES)
-    label_drop.dnd_bind('<<Drop>>', lambda event: save_image_from_local(event.data, item, drop_window))
-
-# Save local image
-def save_image_from_local(image_path, item, drop_window):
-    destination_path = os.path.join('images', os.path.basename(image_path))
-    shutil.copy(image_path, destination_path)
-
-    images[item['name']] = destination_path
-
-    drop_window.destroy()
-
-# Show notes
-def show_notes(item, details_window=None):
-    notes_window = tk.Toplevel(details_window)
-    notes_window.title(f"Notes for {item['name']}")
-    notes_window.geometry('400x400')
-
-    label_notes = ttk.Label(notes_window, text="Here you can write your notes:")
-    label_notes.pack()
-
-    text_notes = tk.Text(notes_window)
-    text_notes.insert('1.0', notes.get(item['name'], ''))  # Use existing note if it exists, otherwise use empty string
-    text_notes.pack()
-
-    button_save = tk.Button(notes_window, text='Save', command=lambda: save_notes(item, text_notes, notes_window))
-    button_save.pack()
-
-    button_back = tk.Button(notes_window, text='Back', command=notes_window.destroy, fg='blue')
-    button_back.pack()
-
-
-# Save notes
-def save_notes(item, text_notes, notes_window):
-    notes[item['name']] = text_notes.get('1.0', 'end-1c')  # Save the note to the global dictionary
-    notes_window.destroy()
 
 # Reset the application
 def reset_application():
@@ -441,38 +398,6 @@ def reset_application():
 
     # Recreate the frame and widgets
     create_form()
-
-# Show introduction
-def show_introduction():
-    introduction_window = tk.Toplevel(root)
-    introduction_window.title('README')
-    introduction_window.geometry('800x300')
-
-    label_intro = ttk.Label(introduction_window, text='Welcome to the Introduction Screen!')
-    label_intro.pack()
-
-    # Add your additional text
-    additional_text = """
-    This is a Landscanner application that allows you to quickly scan all your destinations. 
-    It provides features such as searching for shops, filtering results, dropping images, and adding notes.
-
-    Usage:
-    1. Select your transportation option from the drop-down menu.
-    2. Set the desired time in minutes using the scale.
-    3. Enter a search keyword to find relevant shops.
-    4. Choose filter options to sort the search results.
-    5. Click on the "Search" button to display the results.
-    6. Click on a shop to view detailed information and perform actions like adding notes or dropping images.
-    7. Use the "Reset" button to clear the form and start a new search.
-
-    Feel free to explore all the features and enjoy using Landscanner!
-
-    """
-    additional_label = ttk.Label(introduction_window, text=additional_text, justify=tk.LEFT)
-    additional_label.pack()
-    # Add a back button
-    back_button = tk.Button(introduction_window, text='Back', command=introduction_window.destroy, fg='blue')
-    back_button.pack()
 
 # Callback function when an option is changed
 def option_changed(*args):
@@ -523,8 +448,8 @@ def create_form():
 
     # Set the background label as the master for frame
     frame.master.title('Landscanner')
-    frame.master.geometry('500x650')
-    frame.master.resizable(False, False)
+    frame.master.geometry('430x800')
+    frame.master.resizable(False, True)
     frame.master.iconbitmap('C:\\Users\\denni\\Desktop\\uaena.ico.ico')
 
     frame.grid(sticky='nsew', padx=10, pady=10)
@@ -533,7 +458,7 @@ def create_form():
     value = tk.StringVar()
     value.set('walking')
 
-    label_title = ttk.Label(frame, text='Quickly scan all your destinations', font=('Arial', 20, 'bold'))
+    label_title = ttk.Label(frame, text='Quickly scan all your destinations', font=('Arial', 18, 'bold'))
     label_title.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
     
     label_transport = ttk.Label(frame, text='Transportation:', font=('Arial', 14, 'bold'))
@@ -553,10 +478,7 @@ def create_form():
     entry_search.grid(row=5, column=0, padx=10, pady=5)
 
     button_reset = ttk.Button(frame, text='Reset', command=reset_form)
-    button_reset.grid(row=16, column=0, padx=10, pady=5)
-
-    button_notes = ttk.Button(frame, text='Notes', command=show_notes)
-    button_notes.grid(row=17, column=0, padx=10, pady=5)
+    button_reset.grid(row=15, column=0, padx=10, pady=5)
 
     options = ['Reviews', 'Rating', 'Price Level']
     var1 = tk.StringVar()
@@ -566,22 +488,22 @@ def create_form():
     var2.set(options[1])
     var3.set(options[2])
 
-    filter_label = ttk.Label(frame, text='Filters', font=('Arial', 16, 'bold'))
+    filter_label = ttk.Label(frame, text='Filters', font=('Arial', 14, 'bold'))
     filter_label.grid(row=6, column=0, padx=10, pady=5)
 
-    label1 = ttk.Label(frame, text='1:', font=('Arial', 14, 'bold'))
+    label1 = ttk.Label(frame, text='1:', font=('Arial', 12, 'bold'))
     label1.grid(row=7, column=0, padx=10, pady=5)
 
     menu1 = tk.OptionMenu(frame, var1, *options)
     menu1.grid(row=8, column=0, padx=10, pady=5)
 
-    label2 = ttk.Label(frame, text='2:', font=('Arial', 14, 'bold'))
+    label2 = ttk.Label(frame, text='2:', font=('Arial', 12, 'bold'))
     label2.grid(row=9, column=0, padx=10, pady=5)
 
     menu2 = tk.OptionMenu(frame, var2, *options)
     menu2.grid(row=10, column=0, padx=10, pady=5)
 
-    label3 = ttk.Label(frame, text='3:', font=('Arial', 14, 'bold'))
+    label3 = ttk.Label(frame, text='3:', font=('Arial', 12, 'bold'))
     label3.grid(row=11, column=0, padx=10, pady=5)
 
     menu3 = tk.OptionMenu(frame, var3, *options)
@@ -592,15 +514,12 @@ def create_form():
     var3.trace_add('write', option_changed)
     
     style = ttk.Style()
-    style.configure('Special.TButton', font=('Arial', 22, 'bold'))
+    style.configure('Special.TButton', font=('Arial', 14, 'bold'))
     button_search = ttk.Button(frame, text='Search', command=submit_search,style='Special.TButton')
     button_search.grid(row=13, padx=10, pady=5)
 
-    button_intro = ttk.Button(root, text='README', command=show_introduction)
-    button_intro.grid(row=14, column=0, padx=10, pady=5)
-
     button_exit = ttk.Button(frame, text='Exit', command=root.destroy)
-    button_exit.grid(row=15, column=0, padx=10, pady=5)
+    button_exit.grid(row=16, column=0, padx=10, pady=5)
 
     
 def show_route_map():
@@ -684,7 +603,7 @@ def show_details(item):
     global zzz
     details_window = tk.Toplevel(root)
     details_window.title('Shop Details')
-    details_window.geometry('1000x500')
+    details_window.geometry('800x800')
     details_window.iconbitmap('C:\\Users\\denni\\Desktop\\uaena.ico.ico')
     zzz = item['Place ID']
 
@@ -702,21 +621,22 @@ def show_details(item):
 
     label_price_level = ttk.Label(details_window, text=f"Price Level: {item['Price Level']}", font=('Arial', 20), anchor='center')
     label_price_level.pack()
+    
+    label_five = ttk.Label(details_window, text=f"Five-star Review:", font=('Arial', 20), anchor='center')
+    label_five.pack()
 
-    label_five_star = ttk.Label(details_window, text=f"Five-star Review: {item['Five-star Review']}", font=('Arial', 20), anchor='center')
+    label_five_star = ttk.Label(details_window, text=f"{item['Five-star Review']}", font=('Arial', 18), anchor='center', wraplength=800)
     label_five_star.pack()
 
-    button_notes = ttk.Button(details_window, text='Notes', command=lambda: show_notes(item, details_window))
-    button_notes.pack()
-
-    button_drop_image = tk.Button(details_window, text='Drop an image here...', command=lambda: drop_image(item))
-    button_drop_image.pack()
+    label_space = ttk.Label(details_window, text=f"   ", font=('Arial', 18), anchor='center', wraplength=800)
+    label_space.pack()
 
     map_button = tk.Button(details_window, text='Show Map', command=lambda: show_route_map())
     map_button.pack()
 
     back_button = tk.Button(details_window, text='Back', command=details_window.destroy, fg='blue')
     back_button.pack()
+
 
 create_form()
 # Run the main event loop
